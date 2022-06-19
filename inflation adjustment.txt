@@ -1,0 +1,11 @@
+
+year = c(2008,	2009,	2010,	2011,	2012,	2013,	2014,	2015,	2016,	2017,	2018,	2019,	2020)
+CPI = c(114.108,	114.450,	116.475,	119.842,	121.675,	122.800,	125.158,	126.558,	128.375,	130.433,	133.358,	135.967,	136.967)
+CPI = data.frame(year, CPI)
+
+trans_CI = matrix(NA, nrow = nrow(aggregated_loss_data_resampled), ncol = 1)
+for (j in 1:nrow(aggregated_loss_data_resampled)) {
+  for (i in 1:length(CPI$year)) {
+    if (CPI$year[i] == aggregated_loss_data_resampled$year[j]) { trans_CI[j, ] <- (tail(CPI$CPI, 1) / CPI$CPI[i]) * aggregated_loss_data_resampled$ci[j] }
+  }
+}
