@@ -1,0 +1,241 @@
+###########################################################################
+######         Loading 3-months Treasury US bills data                #####
+###########################################################################
+
+Interest_Rate1= read.csv( "C://Users//u0130739//Desktop//3-months-T-bills.csv", header=TRUE)
+
+##########################################################################
+######         Loading 6-months Treasury US bills data               #####
+##########################################################################
+
+Interest_Rate2= read.csv( "C://Users//u0130739//Desktop//6-months-T-bills.csv", header= TRUE)
+
+##########################################################################
+######          Loading 1-year Treasury US bills data                #####
+##########################################################################
+
+Interest_Rate3= read.csv( "C://Users//u0130739//Desktop//1-year-T-bills.csv", header= TRUE)
+
+### We combine data
+
+Data_InterestRate = data.frame(Date = Interest_Rate1$DATE , Three_Months=Interest_Rate1$DGS3MO, Six_Months=Interest_Rate2$DTB6, One_Year= Interest_Rate3$DGS1  ) 
+
+#### We remove observations with negative and zero values
+
+Data_InterestRate = Data_InterestRate[-which(Data_InterestRate$Three_Months<0),]
+
+Data_InterestRate$Date = as.Date(Data_InterestRate$Date)
+
+Data_InterestRate$Three_Months = as.numeric(Data_InterestRate$Three_Months)
+
+Data_InterestRate$Six_Months = as.numeric(Data_InterestRate$Six_Months)
+
+Data_InterestRate$One_Year = as.numeric(Data_InterestRate$One_Year)
+
+which(Data_InterestRate$Three_Months==0)
+
+Data_InterestRate = Data_InterestRate[-which(Data_InterestRate$Three_Months==0), ]
+
+plot(Data_InterestRate$Date, Data_InterestRate$Three_Months, xlab= "", ylab = "Interest Rate (%)", type = "l")
+
+#### Estimation of physical parameters 
+
+###########################################################################
+####   Finding initial values for CIR parameters by using OLS method   ####
+###########################################################################
+
+N = length(Data_InterestRate$Three_Months)
+
+#### The number of working days is set to be 250 days per year. 
+
+dt = 1/250
+
+rate = Data_InterestRate$Three_Months[1:(N-1)]/100
+
+lagrate = Data_InterestRate$Three_Months[2:N]/100
+
+y = (lagrate - rate)/sqrt(dt*rate)
+
+z1 = sqrt(dt/rate)
+
+z2= sqrt(dt*rate)
+
+data1 = data.frame(y = y, z1 = z1, z2 = z2)
+
+fit = lm(y~-1+ z1 + z2, data = data1)
+
+summary(fit)
+
+CIRloglike =function(param , data , times , test=F , addsign =T ){
+
+# CIRloglike likelihood Function
+
+# param...parameters of the CIR model
+
+# dt ... time interval between the data points 
+
+# c ... multiplying term for the chi-square distribution 
+
+# df ... degree of freedom 
+
+# ncp ... non-centrality parameter 
+
+theta<- param[1]
+
+m<- param[2]
+
+sigma<- param[3]
+
+N<- length(data)
+
+if(test== T)
+
+dt= times
+
+else 
+
+dt = diff(times, 1)/250
+
+dt = as.numeric(dt)
+
+rate = data[1:(N-1)]/100
+
+lagrate = data[2:N]/100 
+
+ncp = rate*(  (  4*theta*exp(-theta*dt)  )/( (sigma^2)*(1- exp(-theta*dt) )  )    )
+
+d = (4*theta*m)/(sigma^2)
+
+c = (  4*theta  )/( (sigma^2)*(1- exp(-theta*dt) )  ) 
+
+res = sum( dchisq(c*lagrate, df = d, ncp = ncp, log= TRUE) + log(c)  )
+
+if(addsign)
+
+return(-res)
+
+else 
+
+return(res)
+
+}
+
+MLE_CIR = optim(par=c(0.277, 0.018, 0.077), fn=CIRloglike, method="L-BFGS-B", lower=c(0.0001, 0.0001, 0.0001), upper=c(+Inf, +Inf, +Inf), data=Data_InterestRate$Three_Months, times= 1/250, test=T  )
+
+MLE_CIR$par
+
+### Risk-neutral parameters
+
+###########################################################################
+####        Computing the market price of interest rate risk          #####
+###########################################################################
+
+Data_InterestRate$Slope = ( (Data_InterestRate$One_Year/100) - (Data_InterestRate$Six_Months/100) )/(180/250)
+ 
+#### The MLE reults for parameters of the CIR model 
+
+theta = 0.25447206
+
+m =  0.01177514
+
+sigma = 0.07406151
+
+lambda = ((theta*m - 2*Data_InterestRate$Slope)/(Data_InterestRate$Three_Months/100)) - theta
+
+plot(Data_InterestRate$Date, xlab = "", ylab = expression(lambda), lambda, type = "l")
+
+### Market price of risk 
+
+MPR = -lambda*sqrt(Data_InterestRate$Three_Months/100)/sigma
+
+plot(Data_InterestRate$Date, MPR, xlab = "", ylab= "Market price of risk", type = "l")
+
+################################################################################
+## Non-linear constrainted optimization in R: We can do the above optimization #
+## by considering contraints on parameters of the CIR model, i.e., theta > 0,  #
+## m >0, sigma > 0, and 2*m*theta > sigma                                      #
+################################################################################
+
+## Objective function 
+
+CIRloglike =function(param , data , times ){
+
+# CIRlolike log-likelihood Function to be maximized with respect to parameters
+
+# param...parameters of the CIR model
+
+# dt ... time interval between the data points 
+
+# c ... multiplying term for the chi-square distribution 
+
+# df ... degree of freedom 
+
+# ncp ... non-centrality parameter 
+
+theta<- param[1]
+
+m<- param[2]
+
+sigma<- param[3]
+
+N<- length(data)
+
+dt= times
+
+rate = data[1:(N-1)]/100
+
+lagrate = data[2:N]/100 
+
+ncp = rate*(  (  4*theta*exp(-theta*dt)  )/( (sigma^2)*(1- exp(-theta*dt) )  )    )
+
+d = (4*theta*m)/(sigma^2)
+
+c = (  4*theta  )/( (sigma^2)*(1- exp(-theta*dt) )  ) 
+
+res = sum( dchisq(c*lagrate, df = d, ncp = ncp, log= TRUE) + log(c)  )
+
+return(-res)
+
+}
+
+### Constraint function 
+
+# Equality constraints
+
+eval_g_ineq <- function(param, data, times)
+{
+return ( (param[3])^2 - 2*param[1]*param[2] )
+}
+
+## Lower and upper bounds
+
+lb <- c(0.001,0.001,0.001)
+ub <- c(Inf,Inf,Inf)
+
+## Initial values
+x0 <- c(0.277, 0.018, 0.077)
+
+## Set optimization options
+
+local_opts <- list( "algorithm" = "NLOPT_LD_MMA", "xtol_rel" = 1.0e-15 )
+
+opts <- list( "algorithm"= "NLOPT_GN_ISRES",
+"xtol_rel"= 1.0e-15,
+"maxeval"= 160000,
+"local_opts" = local_opts,
+"print_level" = 0 )
+
+res <- nloptr ( x0 = x0,
+                eval_f = CIRloglike,
+                lb = lb,
+                ub = ub,
+                eval_g_ineq = eval_g_ineq,
+                opts = opts,
+                data= Data_InterestRate$Three_Months/100,
+                times = 1/250 
+)
+
+print(res)
+
+###################################################################################
+
