@@ -179,7 +179,7 @@ Let's execute the model
 
 ```{r message=FALSE}
 bayesout_mix<- bugs(data, inits, model.file = mixexp,
-               parameters = c("lambda"), n.chains = 1, n.burnin=10000, n.iter = 40000,DIC=FALSE, codaPkg=TRUE,digits=3,debug=F)
+               parameters = c("lambda", "p"), n.chains = 1, n.burnin=10000, n.iter = 40000,DIC=FALSE, codaPkg=TRUE,digits=3,debug=F)
 
 out_mixexp <- read.bugs(bayesout_mix)
 ```
