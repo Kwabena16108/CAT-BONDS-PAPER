@@ -1,0 +1,68 @@
+Graph-related quantities
+
+max degree, min degree, ave degree: 
+
+(757, 2, 15.511436413540714)
+
+Nodes: 1902
+
+Edges: 8476
+
+Graph type: Undirected 
+
+Connected Graph: Yes
+
+Average Path length: 2.1829823094717686
+
+Diameter: 5
+Radius: 3
+
+
+Modularity: 0,358
+Modularity with resolution: 0,358
+Number of Communities: 8
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+Estimated parameters in Power-Law distribution fitted to the degree data:
+
+k_{sat} = 44
+
+k_{cut} = 607
+
+D =  0.07587761
+
+gamma = 2.033681
+
+p-value corresponding to the hypothesis of being power-law distribution: 0.994
+
+""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""
+
+Assortativity assumption:
+
+For a two-tailed t-test with α = 0.05 (critical level) and 16949 degrees of freedom, the t-stat is 56.0 > the critical t of 1.96. 
+Therfore we can reject the null hypothesis and conclude that the Pearson correlation coefficient of -0.398 is statistically significant.
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+The average neighbor degree as a function of the node degree k:
+
+For a two-tailed t-test with α = 0.05 (critical level) and 75 degrees of freedom, the t-stat is 5.0 > the critical t of 1.96. 
+Therfore we can reject the null hypothesis and conclude that the Pearson correlation coefficient of -0.466 is statistically significant.
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+The average Cluster coefficient: 
+
+0.3843650638081197
+
+"""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""
+
+
+
+
